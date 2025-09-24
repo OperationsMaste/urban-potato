@@ -1,8 +1,8 @@
 # pages/2_Organizer.py
 import streamlit as st
 import pandas as pd
-from db import get_db
-from auth import require_login
+from ..db import get_db
+from ..auth import require_login
 from datetime import datetime
 
 def main():
@@ -48,6 +48,5 @@ def main():
     else:
         dfreg = pd.DataFrame([dict(r) for r in regs])
         st.dataframe(dfreg[["id","title","name","email","phone","paid","amount","timestamp"]])
-        # Export CSV
         csv = dfreg.to_csv(index=False).encode("utf-8")
         st.download_button("Download registrations CSV", csv, "my_event_registrations.csv", mime="text/csv")
