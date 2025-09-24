@@ -55,3 +55,10 @@ def register_ui():
             st.error("⚠️ Username already exists.")
         finally:
             conn.close()
+def require_login(required_role=None):
+    if "user" not in st.session_state:
+        st.warning("Please log in or sign up to access this page.")
+        st.stop()
+    if required_role and st.session_state["user"]["role"] != required_role:
+        st.warning(f"This page is for {required_role}s only.")
+        st.stop()
