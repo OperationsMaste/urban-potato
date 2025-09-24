@@ -1,10 +1,11 @@
 # pages/1_Events.py
 import streamlit as st
 import pandas as pd
-from db import get_db
-from auth import require_login
+from ..db import get_db
+from ..auth import require_login
 from datetime import datetime
-from utils import generate_qr_bytes, create_ticket_image
+from ..utils import generate_qr_bytes, create_ticket_image
+
 def format_dt(s):
     try:
         return pd.to_datetime(s)
@@ -15,7 +16,6 @@ def main():
     st.title("📅 Events — Browse & Register")
     conn = get_db(); cur = conn.cursor()
 
-    # Filters
     q1, q2 = st.columns([3,1])
     with q1:
         search = st.text_input("Search events (title/desc/venue)")
@@ -31,7 +31,6 @@ def main():
     df["start_dt"] = df["start_dt"].apply(format_dt)
     df["end_dt"] = df["end_dt"].apply(format_dt)
 
-    # Filter
     display = df.copy()
     if search:
         display = display[display.apply(lambda r: search.lower() in str(r["title"]).lower() or search.lower() in str(r["description"]).lower() or search.lower() in str(r.get("venue","")).lower(), axis=1)]
@@ -46,19 +45,16 @@ def main():
             st.write(f"**Venue:** {ev.get('venue','TBA')}")
             st.write(f"🕒 {ev['start_dt']} — {ev['end_dt']}")
             st.write(f"Organizer: {ev['organizer_username']}")
-            # registrations count
             cur.execute("SELECT COUNT(*) as c FROM registrations WHERE event_id = ?", (ev["id"],))
             cnt = cur.fetchone()["c"]
             st.write(f"Registered: {cnt}/{ev['capacity']}")
         with cols[1]:
             fee_txt = "Free" if ev["fee"] == 0 else f"₹{ev['fee']}"
             st.markdown(f"**{fee_txt}**")
-            # Register
             key = f"reg_btn_{ev['id']}"
             if st.button("Register", key=key):
-                # open registration form
                 with st.form(f"reg_form_{ev['id']}"):
-                    name = st.text_input("Full name", value=(st.session_state['user']['full_name'] if 'user' in st.session_state else ""))
+                    name = st.text_input("Full name", value=(st.session_state.get('user',{}).get('full_name',"")))
                     email = st.text_input("Email")
                     phone = st.text_input("Phone")
                     submitted = st.form_submit_button("Confirm registration")
@@ -73,7 +69,6 @@ def main():
         st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown("---")
-    # My registrations (if logged in)
     st.subheader("My Registrations & Tickets")
     if "user" in st.session_state:
         username = st.session_state['user']['username']
@@ -92,7 +87,6 @@ def main():
                         cur.execute("UPDATE registrations SET paid=1 WHERE id=?", (row["id"],))
                         conn.commit()
                         st.success("Marked as paid (mock). Refresh page.")
-                # Ticket / QR
                 ticket_text = f"Event:{row['title']}|RegID:{row['id']}|User:{username}"
                 qr_bytes = generate_qr_bytes(ticket_text)
                 ticket_img = create_ticket_image(row["title"], row["name"], qr_bytes)
