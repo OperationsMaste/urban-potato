@@ -1,8 +1,8 @@
 # pages/3_Admin.py
 import streamlit as st
 import pandas as pd
-from ..db import get_db, hash_password
-from ..auth import require_login
+from db import get_db, hash_password
+from auth import require_login
 from datetime import datetime
 
 def main():
