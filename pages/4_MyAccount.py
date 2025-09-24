@@ -1,7 +1,6 @@
-1# pages/4_MyAccount.py
+# pages/4_MyAccount.py
 import streamlit as st
-from auth import require_login
-from db import get_db
+from ..auth import require_login
 
 def main():
     if "user" not in st.session_state:
