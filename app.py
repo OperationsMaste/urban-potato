@@ -12,7 +12,6 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
-UI Components
 st.markdown("<h1 style='text-align: center;'>Urban Potato ERP</h1>", unsafe_allow_html=True)
 def main():
     pages = {
