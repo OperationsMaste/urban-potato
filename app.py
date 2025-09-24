@@ -1,4 +1,6 @@
-# app.py
+ # app.py
+import os
+os.environ["STREAMLIT_WATCHER_TYPE"] = "poll"
 import streamlit as st
 from db import init_db
 from auth import login_ui
