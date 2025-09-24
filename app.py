@@ -175,7 +175,7 @@ def login_ui():
                         "email": user["email"]
                     }
                     st.sidebar.success(f"🎉 Logged in as {user['username']} ({user['role']})")
-                    st.experimental_rerun()
+                    st.rerun()
                 else:
                     st.sidebar.error("❌ Invalid credentials")
 
@@ -505,13 +505,13 @@ def main():
             st.write("Logged in as:", st.session_state['user'])
             if st.button("Logout"):
                 st.session_state.pop("user")
-                st.experimental_rerun()
+                st.rerun()
         else:
             st.info("ℹ️ Not logged in")
     elif choice == "Logout":
         if "user" in st.session_state:
             st.session_state.pop("user")
-            st.experimental_rerun()
+            st.rerun()
 
 if __name__ == "__main__":
     main()
