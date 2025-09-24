@@ -115,7 +115,7 @@ def login_ui():
                         "full_name": user["full_name"]
                     }
                     st.sidebar.success(f"🎉 Logged in as {user['username']} ({user['role']})")
-                    st.experimental_rerun()
+                    st.rerun()
                 else:
                     st.sidebar.error("❌ Invalid credentials")
     elif menu == "Sign up":
@@ -413,11 +413,11 @@ def main():
             st.write("Logged in as:", st.session_state['user'])
             if st.button("Logout"):
                 st.session_state.pop("user")
-                st.experimental_rerun()
+                st.rerun()
     elif choice == "Logout":
         if "user" in st.session_state:
             st.session_state.pop("user")
-            st.experimental_rerun()
+            st.rerun()
     elif choice == "Login/Signup":
         st.write("Use the left sidebar to login or sign up.")
 
