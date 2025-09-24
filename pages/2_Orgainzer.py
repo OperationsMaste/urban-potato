@@ -1,8 +1,8 @@
 # pages/2_Organizer.py
 import streamlit as st
 import pandas as pd
-from ..db import get_db
-from ..auth import require_login
+from db import get_db
+from auth import require_login
 from datetime import datetime
 
 def main():
