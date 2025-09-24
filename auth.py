@@ -17,7 +17,7 @@ def login_ui():
             if row and check_password(password, row["password_hash"]):
                 st.session_state["user"] = {"username": row["username"], "role": row["role"], "full_name": row["full_name"]}
                 st.sidebar.success(f"Signed in as {row['full_name']} ({row['role']})")
-                st.experimental_rerun()
+                st.rerun()
             else:
                 st.sidebar.error("Invalid username or password")
     elif mode == "Sign up":
