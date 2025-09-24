@@ -1,6 +1,6 @@
 # auth.py
 import streamlit as st
-from db import get_db, hash_password, check_password
+from .db import get_db, hash_password, check_password
 from datetime import datetime
 
 def login_ui():
@@ -9,8 +9,8 @@ def login_ui():
     conn = get_db(); cur = conn.cursor()
 
     if mode == "Login":
-        username = st.sidebar.text_input("Username")
-        password = st.sidebar.text_input("Password", type="password")
+        username = st.sidebar.text_input("Username", key="login_username")
+        password = st.sidebar.text_input("Password", type="password", key="login_password")
         if st.sidebar.button("Login"):
             cur.execute("SELECT * FROM users WHERE username = ?", (username,))
             row = cur.fetchone()
@@ -23,20 +23,22 @@ def login_ui():
     elif mode == "Sign up":
         with st.sidebar.form("signup_form"):
             st.write("Create Participant account")
-            username = st.text_input("Choose username")
-            full_name = st.text_input("Full name")
-            password = st.text_input("Password", type="password")
+            username = st.text_input("Choose username", key="su_username")
+            full_name = st.text_input("Full name", key="su_fullname")
+            password = st.text_input("Password", type="password", key="su_password")
             submit = st.form_submit_button("Create account")
             if submit:
                 if not (username and full_name and password):
                     st.sidebar.error("Fill all fields")
                 else:
                     try:
-                        cur.execute("INSERT INTO users (username,password_hash,role,full_name,created_at) VALUES (?,?,?,?,?)",
-                                    (username, hash_password(password), "participant", full_name, datetime.now().isoformat()))
+                        cur.execute(
+                            "INSERT INTO users (username,password_hash,role,full_name,created_at) VALUES (?,?,?,?,?)",
+                            (username, hash_password(password), "participant", full_name, datetime.now().isoformat())
+                        )
                         conn.commit()
                         st.sidebar.success("Account created. Please login.")
-                    except Exception as e:
+                    except Exception:
                         st.sidebar.error("Username already exists")
     else:
         st.sidebar.info("Guest mode: limited access. Signup for full features.")
