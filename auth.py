@@ -1,6 +1,6 @@
 # auth.py
 import streamlit as st
-from .db import get_db, hash_password, check_password
+from db import get_db, hash_password, check_password
 from datetime import datetime
 
 def login_ui():
