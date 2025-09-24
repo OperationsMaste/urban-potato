@@ -2,8 +2,9 @@
 import sqlite3
 import hashlib
 from datetime import datetime
+import os
 
-DB_PATH = "fest_erp.db"
+DB_PATH = os.path.join(os.path.dirname(__file__), "fest_erp.db")
 
 def get_db():
     conn = sqlite3.connect(DB_PATH, check_same_thread=False)
@@ -56,7 +57,9 @@ def init_db():
     # create default admin if missing
     cur.execute("SELECT * FROM users WHERE username = 'admin'")
     if not cur.fetchone():
-        cur.execute("INSERT INTO users (username,password_hash,role,full_name,created_at) VALUES (?,?,?,?,?)",
-                    ("admin", hash_password("admin123"), "admin", "Super Admin", datetime.now().isoformat()))
+        cur.execute(
+            "INSERT INTO users (username,password_hash,role,full_name,created_at) VALUES (?,?,?,?,?)",
+            ("admin", hash_password("admin123"), "admin", "Super Admin", datetime.now().isoformat())
+        )
     conn.commit()
     return conn
