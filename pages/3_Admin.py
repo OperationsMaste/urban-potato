@@ -1,8 +1,8 @@
 # pages/3_Admin.py
 import streamlit as st
 import pandas as pd
-from db import get_db, hash_password
-from auth import require_login
+from ..db import get_db, hash_password
+from ..auth import require_login
 from datetime import datetime
 
 def main():
@@ -10,7 +10,6 @@ def main():
     st.title("🛠️ Admin Dashboard")
     conn = get_db(); cur = conn.cursor()
 
-    # Metrics
     cur.execute("SELECT COUNT(*) as c FROM users"); users = cur.fetchone()["c"]
     cur.execute("SELECT COUNT(*) as c FROM events"); events = cur.fetchone()["c"]
     cur.execute("SELECT COUNT(*) as c FROM registrations"); regs = cur.fetchone()["c"]
@@ -33,7 +32,7 @@ def main():
                             (u, hash_password(p), role, full, datetime.now().isoformat()))
                 conn.commit()
                 st.success("User created")
-            except Exception as e:
+            except Exception:
                 st.error("Username already exists")
 
     tab1, tab2, tab3 = st.tabs(["Users","Events","Registrations"])
@@ -45,7 +44,6 @@ def main():
         cur.execute("SELECT * FROM events")
         rows = cur.fetchall()
         st.dataframe(pd.DataFrame([dict(r) for r in rows]))
-        # Bulk import
         st.markdown("**Bulk import events (CSV)**")
         up = st.file_uploader("Upload CSV with columns: title,description,venue,start_dt,end_dt,capacity,organizer_username,fee", type=["csv"])
         if up:
@@ -60,7 +58,6 @@ def main():
         cur.execute("SELECT r.*, e.title FROM registrations r JOIN events e ON r.event_id=e.id")
         rows = cur.fetchall()
         st.dataframe(pd.DataFrame([dict(r) for r in rows]))
-        # Export csv
         df = pd.DataFrame([dict(r) for r in rows])
         csv = df.to_csv(index=False).encode("utf-8")
         st.download_button("Download all registrations CSV", csv, "registrations.csv", mime="text/csv")
