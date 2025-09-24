@@ -1,6 +1,6 @@
 
 import streamlit as st
-from pages.Events import Events
+from pages.Events import Event
 from pages.Organizer import Organizer
 from pages.Admin import Admin
 from pages.MyAccount import MyAccount
