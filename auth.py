@@ -1,52 +1,57 @@
-# auth.py
 import streamlit as st
-from db import get_db, hash_password, check_password
-from datetime import datetime
+import sqlite3
+import hashlib
+
+# Utility to hash passwords
+def hash_password(password: str) -> str:
+    return hashlib.sha256(password.encode()).hexdigest()
+
+def check_password(password: str, hashed: str) -> bool:
+    return hash_password(password) == hashed
 
 def login_ui():
-    st.sidebar.title("🔐 Login / Signup")
-    mode = st.sidebar.radio("I want to:", ["Login", "Sign up", "Continue as Guest"])
-    conn = get_db(); cur = conn.cursor()
+    st.subheader("🔑 Login to Fest ERP")
 
-    if mode == "Login":
-        username = st.sidebar.text_input("Username", key="login_username")
-        password = st.sidebar.text_input("Password", type="password", key="login_password")
-        if st.sidebar.button("Login"):
-            cur.execute("SELECT * FROM users WHERE username = ?", (username,))
-            row = cur.fetchone()
-            if row and check_password(password, row["password_hash"]):
-                st.session_state["user"] = {"username": row["username"], "role": row["role"], "full_name": row["full_name"]}
-                st.sidebar.success(f"Signed in as {row['full_name']} ({row['role']})")
-                st.rerun()
-            else:
-                st.sidebar.error("Invalid username or password")
-    elif mode == "Sign up":
-        with st.sidebar.form("signup_form"):
-            st.write("Create Participant account")
-            username = st.text_input("Choose username", key="su_username")
-            full_name = st.text_input("Full name", key="su_fullname")
-            password = st.text_input("Password", type="password", key="su_password")
-            submit = st.form_submit_button("Create account")
-            if submit:
-                if not (username and full_name and password):
-                    st.sidebar.error("Fill all fields")
-                else:
-                    try:
-                        cur.execute(
-                            "INSERT INTO users (username,password_hash,role,full_name,created_at) VALUES (?,?,?,?,?)",
-                            (username, hash_password(password), "participant", full_name, datetime.now().isoformat())
-                        )
-                        conn.commit()
-                        st.sidebar.success("Account created. Please login.")
-                    except Exception:
-                        st.sidebar.error("Username already exists")
-    else:
-        st.sidebar.info("Guest mode: limited access. Signup for full features.")
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
 
-def require_login(required_role=None):
-    if "user" not in st.session_state:
-        st.warning("Please log in or sign up to access this page.")
-        st.stop()
-    if required_role and st.session_state["user"]["role"] != required_role:
-        st.warning(f"This page is for {required_role}s only.")
-        st.stop()
+    if st.button("Login"):
+        conn = sqlite3.connect("fest_erp.db")
+        cur = conn.cursor()
+        cur.execute("SELECT username, password_hash, role, full_name FROM users WHERE username=?", (username,))
+        row = cur.fetchone()
+        conn.close()
+
+        if row and check_password(password, row[1]):
+            st.session_state["user"] = {
+                "username": row[0],
+                "role": row[2],
+                "full_name": row[3]
+            }
+            st.sidebar.success(f"✅ Signed in as {row[3]} ({row[2]})")
+            st.rerun()   # ✅ FIXED
+        else:
+            st.error("❌ Invalid username or password")
+
+def register_ui():
+    st.subheader("🆕 Register New User")
+
+    full_name = st.text_input("Full Name")
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
+    role = st.selectbox("Role", ["student", "organizer", "admin"])
+
+    if st.button("Register"):
+        conn = sqlite3.connect("fest_erp.db")
+        cur = conn.cursor()
+        try:
+            cur.execute(
+                "INSERT INTO users (full_name, username, password_hash, role) VALUES (?, ?, ?, ?)",
+                (full_name, username, hash_password(password), role),
+            )
+            conn.commit()
+            st.success("🎉 Registration successful! You can now log in.")
+        except sqlite3.IntegrityError:
+            st.error("⚠️ Username already exists.")
+        finally:
+            conn.close()
