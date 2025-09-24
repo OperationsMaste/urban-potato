@@ -1,8 +1,8 @@
 # app.py
 import streamlit as st
-from .db import init_db
-from .auth import login_ui
-from .utils import local_css
+from db import init_db
+from auth import login_ui
+from utils import local_css
 
 def main():
     st.set_page_config(page_title="Fest ERP", layout="wide", initial_sidebar_state="expanded")
