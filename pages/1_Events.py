@@ -4,8 +4,7 @@ import pandas as pd
 from db import get_db
 from auth import require_login
 from datetime import datetime
-from utils import generate_qr_bytes, create_ticket_image
-
+from fest_erp.utils import generate_qr_bytes, create_ticket_image
 def format_dt(s):
     try:
         return pd.to_datetime(s)
