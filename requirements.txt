@@ -4,3 +4,4 @@ python-dateutil
 qrcode
 Pillow
 plotly
+gspread
