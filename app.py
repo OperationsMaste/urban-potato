@@ -1,6 +1,6 @@
 
 import streamlit as st
-from pages import 1_Events,2_Organizer,3_Admin,4_MyAccount
+from pages import (1_Events,2_Organizer,3_Admin,4_MyAccount)
 
 st.set_page_config(
     page_title="Urban Potato ERP",
