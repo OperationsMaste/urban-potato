@@ -2,42 +2,59 @@
 import streamlit as st
 from utils.db import init_db
 from utils.auth import login_ui
+from pages import events, admin, organizer, participant
 
 # Initialize app
 st.set_page_config(page_title="Fest ERP", layout="wide", page_icon="🎉")
 init_db()
 
-# Always show login sidebar
+# Show login form in top bar
 login_ui()
 
-# Navigation
-st.sidebar.title("Navigation")
+# Main navigation tabs (top bar)
 if "user" in st.session_state:
     role = st.session_state["user"]["role"]
-    st.sidebar.markdown("[Events](1_Events)", unsafe_allow_html=True)
 
+    # Always visible tabs
+    tab1, tab2, tab3 = st.tabs(["🏠 Home", "📅 Events", "👤 My Account"])
+
+    with tab1:
+        st.title("🎉 Inter-College Festival ERP")
+        st.write("Welcome! Use the tabs above to navigate.")
+        st.markdown("""
+        **Features:**
+        - Role-based access (Admin/Organizer/Participant)
+        - Event creation & registration
+        - QR code tickets
+        - Email notifications
+        - Google Sheets sync
+        """)
+
+    with tab2:
+        events.show()
+
+    with tab3:
+        st.subheader("Your Account")
+        st.write("Logged in as:", st.session_state.user)
+        if st.button("Logout"):
+            st.session_state.pop("user")
+            st.rerun()
+
+    # Role-specific tabs
     if role == "admin":
-        st.sidebar.markdown("[Admin Dashboard](2_Admin)", unsafe_allow_html=True)
+        with st.expander("📊 Admin Dashboard", expanded=True):
+            admin.show()
+
     elif role == "organizer":
-        st.sidebar.markdown("[Organizer Panel](3_Organizer)", unsafe_allow_html=True)
+        with st.expander("🎤 Organizer Panel", expanded=True):
+            organizer.show()
 
-    st.sidebar.markdown("[My Registrations](4_Participant)", unsafe_allow_html=True)
+    elif role == "participant":
+        with st.expander("🎟️ My Registrations", expanded=True):
+            participant.show()
 
-    if st.sidebar.button("Logout"):
-        st.session_state.pop("user")
-        st.rerun()
 else:
-    st.sidebar.markdown("[Events](1_Events)", unsafe_allow_html=True)
-    st.sidebar.markdown("Login to access more features")
-
-# Home page
-st.title("🎉 Inter-College Festival ERP")
-st.write("Welcome! Use the sidebar to navigate.")
-st.markdown("""
-**Features:**
-- Role-based access (Admin/Organizer/Participant)
-- Event creation & registration
-- QR code tickets
-- Email notifications
-- Google Sheets sync
-""")
+    # Guest view
+    st.title("🎉 Inter-College Festival ERP")
+    st.write("Please login to access all features")
+    events.show_guest()
