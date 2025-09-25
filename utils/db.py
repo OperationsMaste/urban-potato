@@ -5,10 +5,14 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import json
 import pandas as pd
+import hashlib
 
 DB_PATH = "fest_erp.db"
 
 # Initialize Google Sheets
+gsheets_initialized = False
+sh = None
+
 if "GSHEETS_CREDENTIALS_JSON" in st.secrets:
     try:
         creds = ServiceAccountCredentials.from_json_keyfile_dict(
@@ -17,8 +21,9 @@ if "GSHEETS_CREDENTIALS_JSON" in st.secrets:
         )
         gc = gspread.authorize(creds)
         sh = gc.open(st.secrets["GSHEETS_SHEET_NAME"]).sheet1
+        gsheets_initialized = True
     except Exception as e:
-        st.error(f"Google Sheets setup failed: {e}")
+        st.warning(f"Google Sheets setup failed: {e}. Using SQLite only.")
 
 def get_db():
     conn = sqlite3.connect(DB_PATH, check_same_thread=False)
@@ -28,6 +33,7 @@ def get_db():
 def init_db():
     conn = get_db()
     cur = conn.cursor()
+
     # Create tables
     cur.execute("""
     CREATE TABLE IF NOT EXISTS users (
@@ -67,32 +73,40 @@ def init_db():
     )
     """)
 
-    # Create default admin
+    # Create default admin if not exists
     cur.execute("SELECT * FROM users WHERE username = 'admin'")
     if not cur.fetchone():
         cur.execute("""
             INSERT INTO users (username, password_hash, role, full_name, email)
             VALUES (?, ?, ?, ?, ?)
         """, ("admin", hash_password("admin123"), "admin", "Super Admin", "admin@fest.com"))
-    conn.commit()
+        conn.commit()
+        if gsheets_initialized:
+            sync_to_gsheets()
+
+    conn.close()
 
 def sync_to_gsheets():
-    if "GSHEETS_CREDENTIALS_JSON" not in st.secrets:
+    if not gsheets_initialized:
         return
+
     try:
         conn = get_db()
+
         # Sync users
         users = pd.DataFrame(conn.execute("SELECT * FROM users").fetchall())
         sh.update([users.columns.values.tolist()] + users.values.tolist(), "Users!A1")
+
         # Sync events
         events = pd.DataFrame(conn.execute("SELECT * FROM events").fetchall())
         sh.update([events.columns.values.tolist()] + events.values.tolist(), "Events!A1")
+
         # Sync registrations
         regs = pd.DataFrame(conn.execute("SELECT * FROM registrations").fetchall())
         sh.update([regs.columns.values.tolist()] + regs.values.tolist(), "Registrations!A1")
+
     except Exception as e:
         st.error(f"Google Sheets sync failed: {e}")
 
 def hash_password(pw: str):
-    import hashlib
     return hashlib.sha256(pw.encode("utf-8")).hexdigest()
