@@ -12,52 +12,32 @@ login_ui()
 
 # Navigation
 st.sidebar.title("Navigation")
-page = None
-
 if "user" in st.session_state:
     role = st.session_state["user"]["role"]
+    st.sidebar.markdown("[Events](1_Events)", unsafe_allow_html=True)
+
     if role == "admin":
-        page = st.sidebar.radio("Go to:", ["Home", "Admin Dashboard", "Events", "My Registrations"])
+        st.sidebar.markdown("[Admin Dashboard](2_Admin)", unsafe_allow_html=True)
     elif role == "organizer":
-        page = st.sidebar.radio("Go to:", ["Home", "Organizer Panel", "Events", "My Registrations"])
-    else:  # participant
-        page = st.sidebar.radio("Go to:", ["Home", "Events", "My Registrations"])
+        st.sidebar.markdown("[Organizer Panel](3_Organizer)", unsafe_allow_html=True)
+
+    st.sidebar.markdown("[My Registrations](4_Participant)", unsafe_allow_html=True)
 
     if st.sidebar.button("Logout"):
         st.session_state.pop("user")
         st.rerun()
 else:
-    page = st.sidebar.radio("Go to:", ["Home", "Events"])
+    st.sidebar.markdown("[Events](1_Events)", unsafe_allow_html=True)
+    st.sidebar.markdown("Login to access more features")
 
 # Home page
-if page == "Home":
-    st.title("🎉 Inter-College Festival ERP")
-    st.write("Welcome! Use the sidebar to navigate.")
-    st.markdown("""
-    **Features:**
-    - Role-based access (Admin/Organizer/Participant)
-    - Event creation & registration
-    - QR code tickets
-    - Email notifications
-    - Google Sheets sync
-    """)
-
-# Admin page
-elif page == "Admin Dashboard" and st.session_state.get("user", {}).get("role") == "admin":
-    from pages import admin
-    admin.show()
-
-# Organizer page
-elif page == "Organizer Panel" and st.session_state.get("user", {}).get("role") == "organizer":
-    from pages import organizer
-    organizer.show()
-
-# Events page
-elif page == "Events":
-    from pages import events
-    events.show()
-
-# Participant page
-elif page == "My Registrations":
-    from pages import participant
-    participant.show()
+st.title("🎉 Inter-College Festival ERP")
+st.write("Welcome! Use the sidebar to navigate.")
+st.markdown("""
+**Features:**
+- Role-based access (Admin/Organizer/Participant)
+- Event creation & registration
+- QR code tickets
+- Email notifications
+- Google Sheets sync
+""")
