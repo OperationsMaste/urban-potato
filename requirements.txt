@@ -5,4 +5,3 @@ gspread
 oauth2client
 qrcode
 pillow
-sqlite3
