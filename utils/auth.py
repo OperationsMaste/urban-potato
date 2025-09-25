@@ -25,4 +25,27 @@ def login_ui():
                     st.rerun()
                 else:
                     st.sidebar.error("Invalid credentials")
-    # ... (rest of your auth logic)
+
+    elif menu == "Sign up":
+        with st.sidebar.form("signup"):
+            st.markdown("#### 📝 Create Account")
+            username = st.text_input("Username")
+            full_name = st.text_input("Full Name")
+            email = st.text_input("Email")
+            password = st.text_input("Password", type="password")
+            role = st.selectbox("Role", ["participant", "organizer"])
+            if st.form_submit_button("Create Account"):
+                if not all([username, full_name, email, password]):
+                    st.sidebar.error("❌ Fill all fields")
+                else:
+                    conn = get_db()
+                    cur = conn.cursor()
+                    try:
+                        cur.execute("""
+                            INSERT INTO users (username, password_hash, role, full_name, email)
+                            VALUES (?, ?, ?, ?, ?)
+                        """, (username, hash_password(password), role, full_name, email))
+                        conn.commit()
+                        st.sidebar.success("✅ Account created. Please login.")
+                    except sqlite3.IntegrityError:
+                        st.sidebar.error("❌ Username already taken")
