@@ -2,7 +2,7 @@
 import streamlit as st
 from utils.db import init_db
 from utils.auth import login_ui
-from pages import events, admin, organizer, participant
+from pages import events, admin
 
 # Initialize app
 st.set_page_config(page_title="Fest ERP", layout="wide", page_icon="🎉")
