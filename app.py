@@ -12,29 +12,52 @@ login_ui()
 
 # Navigation
 st.sidebar.title("Navigation")
+page = None
+
 if "user" in st.session_state:
     role = st.session_state["user"]["role"]
     if role == "admin":
-        st.sidebar.page_link("pages/2_Admin.py", label="Admin Dashboard")
+        page = st.sidebar.radio("Go to:", ["Home", "Admin Dashboard", "Events", "My Registrations"])
     elif role == "organizer":
-        st.sidebar.page_link("pages/3_Organizer.py", label="Organizer Panel")
-    st.sidebar.page_link("pages/1_Events.py", label="Events")
-    st.sidebar.page_link("pages/4_Participant.py", label="My Registrations")
+        page = st.sidebar.radio("Go to:", ["Home", "Organizer Panel", "Events", "My Registrations"])
+    else:  # participant
+        page = st.sidebar.radio("Go to:", ["Home", "Events", "My Registrations"])
+
     if st.sidebar.button("Logout"):
         st.session_state.pop("user")
         st.rerun()
 else:
-    st.sidebar.page_link("pages/1_Events.py", label="Events")
-    st.sidebar.markdown("Login to access more features")
+    page = st.sidebar.radio("Go to:", ["Home", "Events"])
 
 # Home page
-st.title("🎉 Inter-College Festival ERP")
-st.write("Welcome! Use the sidebar to navigate.")
-st.markdown("""
-**Features:**
-- Role-based access (Admin/Organizer/Participant)
-- Event creation & registration
-- QR code tickets
-- Email notifications
-- Google Sheets sync
-""")
+if page == "Home":
+    st.title("🎉 Inter-College Festival ERP")
+    st.write("Welcome! Use the sidebar to navigate.")
+    st.markdown("""
+    **Features:**
+    - Role-based access (Admin/Organizer/Participant)
+    - Event creation & registration
+    - QR code tickets
+    - Email notifications
+    - Google Sheets sync
+    """)
+
+# Admin page
+elif page == "Admin Dashboard" and st.session_state.get("user", {}).get("role") == "admin":
+    from pages import admin
+    admin.show()
+
+# Organizer page
+elif page == "Organizer Panel" and st.session_state.get("user", {}).get("role") == "organizer":
+    from pages import organizer
+    organizer.show()
+
+# Events page
+elif page == "Events":
+    from pages import events
+    events.show()
+
+# Participant page
+elif page == "My Registrations":
+    from pages import participant
+    participant.show()
